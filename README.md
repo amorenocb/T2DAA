@@ -1,5 +1,6 @@
 # T2DAA
-Diseño y Analisis de Algoritmos: Tarea II 
+---
+## Diseño y Analisis de Algoritmos: Tarea II 
 
 ### Link a paper original de construccion de Suffix Array en tiempo lineal:
 http://web.cs.iastate.edu/∼cs548/references/arkk03simple.pdf
