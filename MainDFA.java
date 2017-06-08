@@ -9,6 +9,7 @@ import java.util.Set;
 
 public class Main {
 
+    static String sigma = "abcdefghijklmnopqrstuvwxyz";
 
     public static void main(String[] args) throws IOException{
 
@@ -18,12 +19,21 @@ public class Main {
 
         int patternLength = pattern.length();
 
-        int [][] dfaTransitionFunction; //= new int[0][patternLength];
+        int [][] dfaTransitionFunction = getTransitionFunction(pattern);
 
-        System.out.println(distinctSymbolsInPattern(pattern));
-
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < patternLength; j++) {
+                System.out.println(dfaTransitionFunction[i][j]);
+            }
+            System.out.println("-------------------");
+        }
     }
 
+    /*
+    * First assumption made by our model: the alphabet is the english alphabet so no need
+    * to use this function to compute it. Decided this because it will take a long time to compute
+    * this for large inputs. No time to waste!!
+    * */
     public static int distinctSymbolsInPattern(String pattern){
         Set<Character> s = new HashSet<>();
         for (char c: pattern.toCharArray()) {
@@ -34,11 +44,37 @@ public class Main {
 
     public static int[][] getTransitionFunction(String pattern){
         int patternLength = pattern.length();
-        int distinctSymbols = distinctSymbolsInPattern(pattern);
-        int [][] transitionFunction = new int [distinctSymbols][patternLength];
+        int alphabetSize = sigma.length();
+        int [][] transitionFunction = new int [alphabetSize][patternLength];
 
-        for (char c: pattern.toCharArray()) {
-            
+        /*
+        * Initial conditions:
+        * */
+        for (int i = 1; i < alphabetSize; i++) {
+            transitionFunction[i][0] = 0;
         }
+        /*
+        * Match transition:
+        * */
+        int index;
+        for (int i = 0; i < patternLength; i++) {
+            index = sigma.indexOf(pattern.charAt(i));
+            transitionFunction[index][i] = i+1;
+        }
+
+        /*
+        * Mismatch transition:
+        * */
+        int x = 0;
+        for (int j = 1; j < patternLength; j++) {
+            for (int i = 0; i < alphabetSize; i++) {
+                if(sigma.charAt(i) != pattern.charAt(j)){
+                    transitionFunction[i][j] = transitionFunction[i][x];
+                    x = transitionFunction[j][x];
+                }
+            }
+        }
+
+        return transitionFunction;
     }
 }
