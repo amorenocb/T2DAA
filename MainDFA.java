@@ -23,9 +23,9 @@ public class Main {
 
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < patternLength; j++) {
-                System.out.println(dfaTransitionFunction[i][j]);
+                System.out.print(dfaTransitionFunction[i][j]+" ");
             }
-            System.out.println("-------------------");
+            System.out.println("\n");
         }
     }
 
@@ -70,9 +70,9 @@ public class Main {
             for (int i = 0; i < alphabetSize; i++) {
                 if(sigma.charAt(i) != pattern.charAt(j)){
                     transitionFunction[i][j] = transitionFunction[i][x];
-                    x = transitionFunction[j][x];
                 }
             }
+            x = transitionFunction[sigma.indexOf(pattern.charAt(j))][x];
         }
 
         return transitionFunction;
