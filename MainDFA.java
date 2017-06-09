@@ -1,7 +1,6 @@
 package dcc.daa;
 
-import java.io.IOException;
-import java.nio.channels.FileChannel;
+import java.io.*;
 import java.nio.file.Paths;
 import java.nio.file.Path;
 import java.util.HashSet;
@@ -14,19 +13,50 @@ public class Main {
     public static void main(String[] args) throws IOException{
 
         Path inputPath = Paths.get(args[0]);
-        FileChannel input = FileChannel.open(inputPath);
+        File input = new File(inputPath.toString());
         String pattern = args[1];
 
+        /*
         int patternLength = pattern.length();
 
         int [][] dfaTransitionFunction = getTransitionFunction(pattern);
 
+
         for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < patternLength; j++) {
+            for (int j = 0; j < patternLength+1; j++) {
                 System.out.print(dfaTransitionFunction[i][j]+" ");
             }
             System.out.println("\n");
         }
+        */
+
+        System.out.println(countAppearances(pattern, input));
+    }
+
+    public static int countAppearances(String pattern, File input) throws IOException{
+        /*
+        * The whole point of this is not running out of memory while reading the file.
+        * Tested it with a 1Gb file, worked out fine.
+        * */
+        BufferedReader reader = new BufferedReader( new InputStreamReader( new FileInputStream(input)));
+
+        int [][] dfa = getTransitionFunction(pattern);
+        int state = 0;
+        int occurrences = 0;
+        int c;
+        while((c = reader.read()) != -1) {
+            char character = (char) c;
+            /*
+            * This condition will be used until we decide on a "cleaned" text format.
+            * */
+            if(sigma.indexOf(character) != -1){
+                state = dfa[sigma.indexOf(character)][state];
+                if(state == pattern.length()){
+                    occurrences++;
+                }
+            }
+        }
+        return occurrences;
     }
 
     /*
@@ -45,7 +75,7 @@ public class Main {
     public static int[][] getTransitionFunction(String pattern){
         int patternLength = pattern.length();
         int alphabetSize = sigma.length();
-        int [][] transitionFunction = new int [alphabetSize][patternLength];
+        int [][] transitionFunction = new int [alphabetSize][patternLength+1];
 
         /*
         * Initial conditions:
@@ -53,6 +83,7 @@ public class Main {
         for (int i = 1; i < alphabetSize; i++) {
             transitionFunction[i][0] = 0;
         }
+
         /*
         * Match transition:
         * */
@@ -61,6 +92,15 @@ public class Main {
             index = sigma.indexOf(pattern.charAt(i));
             transitionFunction[index][i] = i+1;
         }
+
+        /*
+        * We need to set the transitions of accept state.
+        * These need to be same as the start state.
+        * */
+        for (int i = 0; i < alphabetSize; i++) {
+            transitionFunction[i][patternLength] = transitionFunction[i][0];
+        }
+
 
         /*
         * Mismatch transition:
