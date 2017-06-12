@@ -8,10 +8,15 @@ import java.util.stream.Stream;
 import java.nio.file.Files;
 import java.util.stream.Collectors;
 
+import static java.nio.file.StandardOpenOption.APPEND;
+import static java.nio.file.StandardOpenOption.CREATE;
+
 public class Main {
 
     static final String sigma = "aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxXyYzZ ";
     static Random randomGenerator = new Random();
+    static Path resultPath = Paths.get("results.csv");
+    static StringBuilder line = new StringBuilder();
 
     public static void main(String[] args) throws IOException{
 
@@ -27,15 +32,27 @@ public class Main {
             File input = new File(aPath.toString());
             File cleanedInput = textCleaner(input);
 
-            System.out.println("Finished cleaning.");
+            System.out.println("Finished cleaning "+input.getName());
 
             List<String> testWords = getTestWords(cleanedInput);
 
-            System.out.println(getWordCount(cleanedInput));
+            int wc = getWordCount(cleanedInput);
 
             for (String word: testWords) {
-                System.out.println("Word: "+word+ " Number of appearances: "+countAppearances(word, cleanedInput));
+                line.setLength(0);
+                line.append(wc);
+                line.append(",");
+                line.append(word);
+                line.append(",");
+                line.append(word.length());
+                line.append(",");
+                int appearances = countAppearances(word,cleanedInput);
+                line.append(appearances);
+                line.append(System.lineSeparator());
+                Files.write(resultPath, line.toString().getBytes(), CREATE, APPEND);
             }
+            System.out.println("Finished processing: "+input.getName());
+
         }
 
 
@@ -75,7 +92,6 @@ public class Main {
                     }
                 }
                 if(wordToAdd.length() > 0 ){
-                    System.out.println(wordToAdd.toString());
                     testWords.add(wordToAdd.toString());
                 }
 
@@ -152,10 +168,16 @@ public class Main {
         * */
         BufferedReader reader = new BufferedReader( new InputStreamReader( new FileInputStream(input)));
 
+        long currentTime = System.nanoTime();
         int [][] dfa = getTransitionFunction(pattern);
+        long execTime = System.nanoTime() - currentTime;
+        line.append(execTime);
+        line.append(",");
+
         int state = 0;
         int occurrences = 0;
         int c;
+        currentTime = System.nanoTime();
         while((c = reader.read()) != -1) {
             char character = (char) c;
             /*
@@ -170,6 +192,9 @@ public class Main {
                 state = 0;
             }
         }
+        execTime = System.nanoTime() - currentTime;
+        line.append(execTime);
+        line.append(",");
         return occurrences;
     }
 
