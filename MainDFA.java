@@ -1,36 +1,126 @@
-package dcc.daa;
-
 import java.io.*;
 import java.nio.file.Paths;
 import java.nio.file.Path;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
+import Utilities;
 
 public class Main {
 
-    static String sigma = "abcdefghijklmnopqrstuvwxyz";
+    static final String sigma = "aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxXyYzZ ";
+    static Random randomGenerator = new Random();
 
     public static void main(String[] args) throws IOException{
 
         Path inputPath = Paths.get(args[0]);
         File input = new File(inputPath.toString());
-        String pattern = args[1];
+        File cleanedInput = textCleaner(input);
 
-        /*
-        int patternLength = pattern.length();
+        List<String> testWords = getTestWords(cleanedInput);
 
-        int [][] dfaTransitionFunction = getTransitionFunction(pattern);
-
-
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < patternLength+1; j++) {
-                System.out.print(dfaTransitionFunction[i][j]+" ");
-            }
-            System.out.println("\n");
+        for (String word: testWords) {
+            System.out.println("Word: "+word+ " Number of appearances: "+countAppearances(word, cleanedInput));
         }
-        */
 
-        System.out.println(countAppearances(pattern, input));
+    }
+
+    public static List<String> getTestWords(File input) throws IOException{
+        int wordCount = getWordCount(input);
+        int sampleSize = (int)Math.ceil(wordCount/10);
+        long randomPointerLocation;
+        RandomAccessFile raf = new RandomAccessFile(input, "r");
+
+        List<String> testWords = new ArrayList<>();
+        while (testWords.size() < sampleSize) {
+            try {
+                StringBuilder wordToAdd = new StringBuilder();
+                randomPointerLocation = Utilities.nextLong(randomGenerator, raf.length());
+                raf.seek(randomPointerLocation);
+                char c = (char)raf.read();
+                if(c != ' '){
+                    while (c != ' '){
+                        c = (char)raf.read();
+                    }
+                    c = (char)raf.read();
+                    while (c != ' '){
+                        wordToAdd.append(c);
+                        c = (char)raf.read();
+                    }
+                }
+                else{
+                    while (c == ' '){
+                        c = (char)raf.read();
+                    }
+                    while (c != ' '){
+                        wordToAdd.append(c);
+                        c = (char)raf.read();
+                    }
+                }
+                if(wordToAdd.length() > 0 ){
+                    testWords.add(wordToAdd.toString());
+                }
+
+            }
+            catch (EOFException e){
+                continue;
+            }
+        }
+
+        return testWords;
+
+    }
+
+    public static File textCleaner(File input) throws IOException{
+        Writer writer =
+                new BufferedWriter(
+                    new OutputStreamWriter(
+                        new FileOutputStream(input.getName()+"Cleaned.txt"), "utf-8"));
+        Scanner scanner = new Scanner(input);
+        while(scanner.hasNextLine()){
+            String line = scanner.nextLine();
+            for (char c: line.toCharArray()) {
+                if (Character.getType(c) == Character.LINE_SEPARATOR){
+                    writer.write(" ");
+                }
+                else if (Character.getType(c) == Character.PARAGRAPH_SEPARATOR){
+                    writer.write(" ");
+                }
+                else if(Character.getType(c) == Character.OTHER_PUNCTUATION){
+                    if(c == '\''){
+                        continue;
+                    }
+                    else{
+                        writer.write(" ");
+                    }
+
+                }
+                else if (sigma.indexOf(c) != -1){
+                    if (Character.isUpperCase(c)){
+                        writer.write(Character.toLowerCase(c));
+                    }
+                    else {
+                        writer.write(c);
+                    }
+                }
+
+
+            }
+        }
+        writer.close();
+        File output = new File(input.getName()+"Cleaned.txt");
+        return output;
+    }
+
+    public static int getWordCount(File input) throws IOException{
+        Scanner scanner = new Scanner(input);
+        scanner.useDelimiter(" ");
+        int wc = 0;
+        while (scanner.hasNext()) {
+            String word = scanner.next();
+            if(word.length() > 0){
+                wc++;
+            }
+        }
+        return wc;
     }
 
     public static int countAppearances(String pattern, File input) throws IOException{
@@ -49,27 +139,16 @@ public class Main {
             /*
             * This condition will be used until we decide on a "cleaned" text format.
             * */
-            if(sigma.indexOf(character) != -1){
+            if(character != ' '){
                 state = dfa[sigma.indexOf(character)][state];
                 if(state == pattern.length()){
                     occurrences++;
                 }
+            }else{
+                state = 0;
             }
         }
         return occurrences;
-    }
-
-    /*
-    * First assumption made by our model: the alphabet is the english alphabet so no need
-    * to use this function to compute it. Decided this because it will take a long time to compute
-    * this for large inputs. No time to waste!!
-    * */
-    public static int distinctSymbolsInPattern(String pattern){
-        Set<Character> s = new HashSet<>();
-        for (char c: pattern.toCharArray()) {
-            s.add(c);
-        }
-        return s.size();
     }
 
     public static int[][] getTransitionFunction(String pattern){
