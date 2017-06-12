@@ -1,8 +1,12 @@
+package dcc.daa;
+
 import java.io.*;
 import java.nio.file.Paths;
 import java.nio.file.Path;
 import java.util.*;
-import Utilities;
+import java.util.stream.Stream;
+import java.nio.file.Files;
+import java.util.stream.Collectors;
 
 public class Main {
 
@@ -11,15 +15,29 @@ public class Main {
 
     public static void main(String[] args) throws IOException{
 
-        Path inputPath = Paths.get(args[0]);
-        File input = new File(inputPath.toString());
-        File cleanedInput = textCleaner(input);
+        Path inputsFolderPath = Paths.get(args[0]);
 
-        List<String> testWords = getTestWords(cleanedInput);
-
-        for (String word: testWords) {
-            System.out.println("Word: "+word+ " Number of appearances: "+countAppearances(word, cleanedInput));
+        // Here we store the paths to all input files.
+        List<Path> inputPaths;
+        try (Stream<Path> paths = Files.walk(inputsFolderPath)) {
+            inputPaths = paths.filter(Files::isRegularFile).collect(Collectors.toList());
         }
+
+        for (Path aPath: inputPaths) {
+            File input = new File(aPath.toString());
+            File cleanedInput = textCleaner(input);
+
+            System.out.println("Finished cleaning.");
+
+            List<String> testWords = getTestWords(cleanedInput);
+
+            System.out.println(getWordCount(cleanedInput));
+
+            for (String word: testWords) {
+                System.out.println("Word: "+word+ " Number of appearances: "+countAppearances(word, cleanedInput));
+            }
+        }
+
 
     }
 
@@ -40,6 +58,7 @@ public class Main {
                     while (c != ' '){
                         c = (char)raf.read();
                     }
+
                     c = (char)raf.read();
                     while (c != ' '){
                         wordToAdd.append(c);
@@ -56,6 +75,7 @@ public class Main {
                     }
                 }
                 if(wordToAdd.length() > 0 ){
+                    System.out.println(wordToAdd.toString());
                     testWords.add(wordToAdd.toString());
                 }
 
@@ -105,6 +125,8 @@ public class Main {
 
             }
         }
+        writer.write(" ");
+        scanner.close();
         writer.close();
         File output = new File(input.getName()+"Cleaned.txt");
         return output;
