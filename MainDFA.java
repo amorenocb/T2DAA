@@ -1,5 +1,3 @@
-package dcc.daa;
-
 import java.io.*;
 import java.nio.file.Paths;
 import java.nio.file.Path;
@@ -7,6 +5,8 @@ import java.util.*;
 import java.util.stream.Stream;
 import java.nio.file.Files;
 import java.util.stream.Collectors;
+
+import Utilities;
 
 import static java.nio.file.StandardOpenOption.APPEND;
 import static java.nio.file.StandardOpenOption.CREATE;
