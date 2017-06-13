@@ -5,40 +5,96 @@ using namespace std;
 #define FORs(i, n, s) for (int (i)=0; (i) < int (n); (i)+=s)
 #define REVs(i, n, s) for (int (i)= (int) n; (i) >= 0; (i)-=s)
 
-void stripAndTrim(string text){
-	std::remove(text.begin(), text.end(), '.');
-	std::remove(text.begin(), text.end(), ',');
-	std::remove(text.begin(), text.end(), ';');
-	std::replace(text.begin(), text.end(), '\n', ' ');
-	std::transform(text.begin(), text.end(), text.begin(), ::tolower);
-	return;
+/* Removes voals variations that are not used in english. */
+string correctVoals(string text){
+	std::remove(text.begin(), text.end(), (char) 50081);
+	std::remove(text.begin(), text.end(), (char) 50084);
+	std::remove(text.begin(), text.end(), (char) 50085);
+	std::remove(text.begin(), text.end(), (char) 50049);
+	std::remove(text.begin(), text.end(), (char) 50052);
+	std::remove(text.begin(), text.end(), (char) 50053);
+	std::remove(text.begin(), text.end(), (char) 50089);
+	std::remove(text.begin(), text.end(), (char) 50090);
+	std::remove(text.begin(), text.end(), (char) 50091);
+	std::remove(text.begin(), text.end(), (char) 50057);
+	std::remove(text.begin(), text.end(), (char) 50058);
+	std::remove(text.begin(), text.end(), (char) 50059);
+	std::remove(text.begin(), text.end(), (char) 50095);
+	std::remove(text.begin(), text.end(), (char) 50093);
+	std::remove(text.begin(), text.end(), (char) 50061);
+	std::remove(text.begin(), text.end(), (char) 50063);
+	std::remove(text.begin(), text.end(), (char) 50099);
+	std::remove(text.begin(), text.end(), (char) 50102);
+	std::remove(text.begin(), text.end(), (char) 50104);
+	std::remove(text.begin(), text.end(), (char) 50067);
+	std::remove(text.begin(), text.end(), (char) 50070);
+	std::remove(text.begin(), text.end(), (char) 50072);
+	std::remove(text.begin(), text.end(), (char) 50106);
+	std::remove(text.begin(), text.end(), (char) 50108);
+	std::remove(text.begin(), text.end(), (char) 50074);
+	std::remove(text.begin(), text.end(), (char) 50076);
+	return text;
 }
 
-void standarize(string text){
+/* Removes special characters. */
+string stripAndTrim(string text){
+	std::remove(text.begin(), text.end(), '{');
+	std::remove(text.begin(), text.end(), '}');
+	std::remove(text.begin(), text.end(), '[');
+	std::remove(text.begin(), text.end(), ']');
+	std::remove(text.begin(), text.end(), '`');
+	std::remove(text.begin(), text.end(), '\\');
+	std::remove(text.begin(), text.end(), '~');
+	std::replace(text.begin(), text.end(), '.', ' ');
+	std::replace(text.begin(), text.end(), ',', ' ');
+	std::replace(text.begin(), text.end(), ';', ' ');
+	std::replace(text.begin(), text.end(), ':', ' ');
+	std::replace(text.begin(), text.end(), '-', ' ');
+	std::replace(text.begin(), text.end(), '_', ' ');
+	std::replace(text.begin(), text.end(), '+', ' ');
+	std::replace(text.begin(), text.end(), '*', ' ');
+	std::replace(text.begin(), text.end(), '=', ' ');
+	std::replace(text.begin(), text.end(), '?', ' ');
+	std::replace(text.begin(), text.end(), '!', ' ');
+	std::replace(text.begin(), text.end(), (char) 49825, ' ');
+	std::replace(text.begin(), text.end(), (char) 49855, ' ');
+	std::replace(text.begin(), text.end(), '\'', ' ');
+	std::replace(text.begin(), text.end(), '\"', ' ');
+	std::replace(text.begin(), text.end(), '\t', ' ');
+	std::replace(text.begin(), text.end(), '\n', ' ');
+	text = correctVoals(text);
+	std::transform(text.begin(), text.end(), text.begin(), ::tolower);
+	return text;
+}
+
+/* Adds as many $ as necessary to have a viable string for the build. */
+string standarize(string text){
 	while (text.length()%5){
 		text.append("$");
 	}
-	return;
+	return text;
 }
 
-int getMax(vector<pair<string, int>> T, int index){
-	int max = 0;
-	// int i;
+/* Auxiliary method to get the size of a Counting Sort Array. */
+unsigned char getMax(vector<pair<string, int>> T, int index){
+	unsigned char max = 0;
 	FORs(i, T.size(), 1){
-		if (max < (int) T[i].first[index]){
-			max = (int) T[i].first[index];
+		if (max < (unsigned char) T[i].first[index]){
+			max = (unsigned char) T[i].first[index];
 		}
 	}
 	return max;
 }
 
+/* Organizes an array by storing the ammount of times a value appears */
 vector<int> countSort(vector<pair<string, int>> T, int index){
-	// int i;
 	int max = getMax(T, index);
-	vector<int> out(max);
+	vector<int> out(max, 0);
+	/* Counts aparitions */
 	FORs(i, T.size(), 1){
 		out[(int) T[i].first[index]]++;
 	}
+	/* Sets the values' index on the original array sorted. */
 	FORs(i, max, 1){
 		if (i == 0) continue;
 		out[i] += out[i-1];
@@ -46,49 +102,36 @@ vector<int> countSort(vector<pair<string, int>> T, int index){
 	return out;
 }
 
+/* Sorts an array according to the index specified */
 void indexSort(vector<pair<string, int>> T, int index){
 	int start=0;
 	vector<pair<string, int>> out(T.size());
 	vector<int> c_sort = countSort(T, index);
 	FORs(i, T.size(), 1){
-		if (((int) T[i].first[index]) == 0)
+		// cout << i << " " << T[i].first << " " << index << " AAAAA\n";
+		if (((unsigned char) T[i].first[index]) == 0){
 			out[start++]=T[i];
-		else
-			out[c_sort[((int) T[i].first[index])-1]++]=T[i];
+		}
+		else {
+			// cout << (unsigned char) T[i].first[index] - 1 << '\n';
+			out[c_sort[(unsigned char) T[i].first[index] - 1]++]=T[i];
+		}
 	}
 	out.swap(T);
 }
 
-
+/* Sorts an array by organizing by its indexes. */
 void radixSort(vector<pair<string, int>> T, int size){
-	// int index;
 	REVs(index, size-1, 1){
 		indexSort(T, index);
 	}
 }
 
-// vector<pair<string, int>> merge(vector<pair<string, int>> T1, vector<pair<string, int>> T2){
-// 	vector<int> out;
-// 	vector<string>::iterator it1 = T1.begin();
-// 	vector<string>::iterator it2 = T2.begin();
-// 	while (it1 != T1.end() && it2 != T2.end()){
-// 		if (*it1.first < *it2.first){
-// 			out.push_back(*it1);
-// 			++it1;
-// 		}
-// 		else{
-// 			out.push_back(*it2);
-// 			++it2;
-// 		}
-// 	}
-// 	return out;
-// }
-
-vector<char> getRanks(vector<pair<string, int>> T){
-	vector<char> out(T.size());
+/* Gives a rank depending on which index is in. */
+vector<unsigned char> getRanks(vector<pair<string, int>> T){
+	vector<unsigned char> out(T.size());
 	string prev;
-	// int i;
-	char rank=1;
+	unsigned char rank=1;
 	FORs(i, T.size(), 1){
 		if (prev.compare(T[i].first) == 0){
 			out[T[i].second]=rank;
@@ -98,41 +141,36 @@ vector<char> getRanks(vector<pair<string, int>> T){
 		}
 		prev = T[i].first;
 	}
+	cout << rank;
 	return out;
 }
 
-vector<pair<char, int>> setRanks(vector<pair<string, int>> T, vector<char> Ranks){
-	vector<pair<char, int>> out(T.size());
-	// int i;
+/* According to a universal ranking array, sets the ranks of a subset. */
+vector<pair<unsigned char, int>> setRanks(vector<pair<string, int>> T, vector<unsigned char> Ranks){
+	vector<pair<unsigned char, int>> out(T.size());
 	FORs(i, T.size(), 1){
 		out[i] = make_pair(Ranks[T[i].second], T[i].second);
 	}
 	return out;
 }
 
-string buildSub(vector<pair<char, int>> S1, vector<pair<char, int>> S2){
+/* Concatenates two unsigned char vectors. */
+string buildSub(vector<pair<unsigned char, int>> S1, vector<pair<unsigned char, int>> S2){
 	string aux;
-	// int i;
-	vector<pair<char, int>>::iterator it1 = S1.begin();
-	vector<pair<char, int>>::iterator it2 = S2.begin();
-	aux += (*it1).first;
-	++it1;
-	while (it1 != S1.end()){
-		aux += (*it1).first;
-		++it1;
+	FORs(i, S1.size(), 1){
+		aux+=S1[i].first;
 	}
-	while (it2 != S2.end()){
-		aux += (*it2).first;
-		++it2;
+	FORs(i, S2.size(), 1){
+		aux+=S2[i].first;
 	}
 	return aux;
 }
 
-vector<pair<char, int>> merge(vector<pair<char, int>> S1, vector<pair<char, int>> S2){
-	// int i;
+/* Merges two Suffix Arrays */
+vector<pair<unsigned char, int>> merge(vector<pair<unsigned char, int>> S1, vector<pair<unsigned char, int>> S2){
 	string text = buildSub(S1, S2);
 	int l = text.length();
-	vector<pair<char, int>> S(l);
+	vector<pair<unsigned char, int>> S(l);
 	standarize(text);
 	vector<pair<string, int>> Tall;
 	FORs(i, l, 1) Tall.push_back(make_pair(text.substr(i,2), i));
@@ -142,11 +180,12 @@ vector<pair<char, int>> merge(vector<pair<char, int>> S1, vector<pair<char, int>
 	return S;
 }
 
-vector<pair<char, int>> getSuffTable(vector<pair<char, int>> STab, vector<pair<char, int>> STc, vector<char> Ranks){
-	vector<pair<char, int>> out;
+/* Merges two Suffix Arrays of different size. */
+vector<pair<unsigned char, int>> getSuffTable(vector<pair<unsigned char, int>> STab, vector<pair<unsigned char, int>> STc, vector<unsigned char> Ranks){
+	vector<pair<unsigned char, int>> out;
 	int a,b;
-	vector<pair<char, int>>::iterator it1 = STab.begin();
-	vector<pair<char, int>>::iterator it2 = STc.begin();
+	vector<pair<unsigned char, int>>::iterator it1 = STab.begin();
+	vector<pair<unsigned char, int>>::iterator it2 = STc.begin();
 	while (it1 != STab.end() && it2 != STc.end()){
 		if ((*it1).first < (*it2).first){
 			out.push_back(*it1);
@@ -178,23 +217,23 @@ vector<pair<char, int>> getSuffTable(vector<pair<char, int>> STab, vector<pair<c
 	return out;
 }
 
-vector<int> getSA(vector<pair<char, int>> ST){
+/* Translate an auxiliary representation of a Suffix Array to a Suffix Array. */
+vector<int> getSA(vector<pair<unsigned char, int>> ST){
 	vector<int> SA(ST.size());
-	// int i;
 	FORs(i, ST.size(), 1){
 		SA[ST[i].second] = i;
 	}
 	return SA;
 }
 
+/* Builds a Suffix Array from a string. */
 vector<int> build(string text){
-	// int i;
 	int l = text.length();
-	stripAndTrim(text);
-	standarize(text);
+	text = stripAndTrim(text);
+	text = standarize(text);
 	vector<pair<string, int>> Tall, Ta, Tb, Tc, Tab;
-	vector<char> Ranks;
-	vector<pair<char, int>> STa, STb, STab, STc, ST;
+	vector<unsigned char> Ranks;
+	vector<pair<unsigned char, int>> STa, STb, STab, STc, ST;
 	vector<int> SA;
 	FORs(i, l, 3){
 		Ta.push_back(make_pair(text.substr(i,3), i));
@@ -215,6 +254,7 @@ vector<int> build(string text){
 	return SA;
 }
 
+/* Verifies a substring is found inside another string. */
 int check(string test, vector<int> SA, string text, int index){
 	FORs(i, test.length(), 1){
 		if (test[i] != text[SA[index+i]]) return -1;
@@ -222,10 +262,11 @@ int check(string test, vector<int> SA, string text, int index){
 	return index;
 }
 
-int search(string test, vector<int> SA, string text){
+/* Searches across a Suffix Array for a string. */
+int search(string test, vector<int> SA, string text, int begin, int end){
 	int ini, fin, mid;
-	ini = 0;
-	fin = (int) SA.size();
+	ini = begin;
+	fin = end;
 	while (ini != fin){
 		mid = (ini+fin)/2;
 		if (test[0] < text[SA[mid]]){
@@ -241,6 +282,15 @@ int search(string test, vector<int> SA, string text){
 	return -1;
 }
 
+/* Returns the ammount of aparitions a substring has on a string, by using its Suffix Array */
+int getAmmount(string test, vector<int> SA, string text, int index){
+	int a = search(test, SA, text, 0, index);
+	int b = search(text, SA, text, index, (int) SA.size());
+	if (a != b) return b-a;
+	else return 1;
+}
+
+/* Returns a string concatenation of a file */
 string parse(string file){
 
 	ifstream t(file);
@@ -250,27 +300,86 @@ string parse(string file){
 	return buffer.str();
 }
 
+/* Runs a test on all files with random substrings. */
+void fulltest(){
+
+	int result, ammount;
+	int size, a, b;
+	clock_t begin, end;
+	string test;
+	string text;
+
+	FORs(i, 7, 1){
+		text = parse(to_string(i+15)+".txt");
+		begin = clock();
+		vector<int> SA = build(text);
+		end = clock();
+		cout << "Elapsed building time: " << double(end - begin) / CLOCKS_PER_SEC << '\n';
+		size = text.length();
+		FORs(i, (size/10), 1){
+			a = rand()%size;
+			b = rand()%(size-a);
+			test = text.substr(a, b);
+			begin = clock();
+			result = search(test, SA, text, 0, (int) SA.size());
+			end = clock();
+			if (result != -1){
+				begin = clock();
+				ammount = getAmmount(test, SA, text, result);
+				end = clock();
+				cout << ammount << " Ocurrencies were found.\n";
+				cout << "Elapsed searching time: " << double(end - begin) / CLOCKS_PER_SEC << '\n';
+			}
+			else{
+				cout << "Not found\n";
+				cout << "Elapsed searching time: " << double(end - begin) / CLOCKS_PER_SEC << '\n';
+			}
+		}
+	}
+}
+
 int main(){
 	
 	int testsAmmount;
+	int result, ammount;
 	string test;
 	string file;
+	clock_t begin, end;
 
-	cout << "Ingrese archivo de prueba: ";
+	cout << "Enter test file: ";
 	cin >> file;
 
-	string text = parse(file);
-	vector<int> SA = build(text);
+	if (file.compare("full test")){
+		fulltest();
+		return 0;
+		}
 
-	cout << "Ingrese número de tests: ";
+	string text = parse(file);
+	// string text = parse("15.txt");
+	begin = clock();
+	vector<int> SA = build(text);
+	end = clock();
+	cout << "Elapsed building time: " << double(end - begin) / CLOCKS_PER_SEC << '\n';
+
+	cout << "Enter number of tests: ";
 	cin >> testsAmmount;
 
 	FORs(i, testsAmmount, 1){
-		cout << "Ingrese substring: ";
+		cout << "Enter test substring: ";
 		cin >> test;
-		cout << (search(test, SA, text) == true ? "SI" : "NO");
+		result = search(test, SA, text, 0, (int) SA.size());
+		if (result != -1){
+			begin = clock();
+			ammount = getAmmount(test, SA, text, result);
+			end = clock();
+			cout << ammount << " Ocurrencies were found.\n";
+			cout << "Elapsed searching time: " << double(end - begin) / CLOCKS_PER_SEC << '\n';
+		}
+		else{
+			cout << "Not found\n";
+			cout << "Elapsed searching time: " << double(end - begin) / CLOCKS_PER_SEC << '\n';
+		}
 	}
-
 
 	return 0;
 }
