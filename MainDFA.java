@@ -1,5 +1,3 @@
-package dcc.daa;
-
 import java.io.*;
 import java.nio.file.Paths;
 import java.nio.file.Path;
@@ -7,6 +5,8 @@ import java.util.*;
 import java.util.stream.Stream;
 import java.nio.file.Files;
 import java.util.stream.Collectors;
+
+import Utilities;
 
 import static java.nio.file.StandardOpenOption.APPEND;
 import static java.nio.file.StandardOpenOption.CREATE;
@@ -58,16 +58,22 @@ public class Main {
 
     }
 
+    /*
+    * Gets N/100 random words from input for testing.
+    * @param File input : File object that contains a text file already pre processed. (See textCleaner)
+    * @returns List<String> : Contains the N/100 words obtained at random from input.
+    * */
     public static List<String> getTestWords(File input) throws IOException{
         int wordCount = getWordCount(input);
-        int sampleSize = (int)Math.ceil(wordCount/10);
+        int sampleSize = (int)Math.ceil(wordCount/100);
         long randomPointerLocation;
         RandomAccessFile raf = new RandomAccessFile(input, "r");
+        StringBuilder wordToAdd = new StringBuilder();
 
         List<String> testWords = new ArrayList<>();
         while (testWords.size() < sampleSize) {
             try {
-                StringBuilder wordToAdd = new StringBuilder();
+                wordToAdd.setLength(0);
                 randomPointerLocation = Utilities.nextLong(randomGenerator, raf.length());
                 raf.seek(randomPointerLocation);
                 char c = (char)raf.read();
@@ -78,6 +84,9 @@ public class Main {
 
                     c = (char)raf.read();
                     while (c != ' '){
+                        if(wordToAdd.length() > 100){
+                            continue;
+                        }
                         wordToAdd.append(c);
                         c = (char)raf.read();
                     }
@@ -87,6 +96,9 @@ public class Main {
                         c = (char)raf.read();
                     }
                     while (c != ' '){
+                        if(wordToAdd.length() > 100){
+                            continue;
+                        }
                         wordToAdd.append(c);
                         c = (char)raf.read();
                     }
@@ -105,6 +117,12 @@ public class Main {
 
     }
 
+    /*
+    * Cleans an input text file. It deletes every non alphabetic character (e.g á) and replaces punctuations
+    * with spaces. The same for line/paragraph separators.
+    * @param File input : File object that contains a text file to be pre processed.
+    * @returns File : File object that contains the cleaned version of the input file.
+    * */
     public static File textCleaner(File input) throws IOException{
         Writer writer =
                 new BufferedWriter(
@@ -148,6 +166,13 @@ public class Main {
         return output;
     }
 
+    /*
+    * Counts the amount of words in File input. This file has to be previously pre processed by the
+    * textCleaner function. Here we define a word as a sequence of characters in sigma with no character
+    * space between it.
+    * @param File input : File object that contains a text file already pre processed. (See textCleaner)
+    * @returns int : word count for input file.
+    * */
     public static int getWordCount(File input) throws IOException{
         Scanner scanner = new Scanner(input);
         scanner.useDelimiter(" ");
@@ -161,6 +186,13 @@ public class Main {
         return wc;
     }
 
+    /*
+    * Counts the amount of appearances of the String pattern in the File input. It uses the getTransitionFunction
+    * function to construct an DFA and then iterates through the File inputs characters one by one. Passing from one
+    * state to another accordingly.
+    * @param String pattern : The pattern we search for in File input.
+    * @param File input : File object that contains a text file already pre processed. (See textCleaner)
+    * */
     public static int countAppearances(String pattern, File input) throws IOException{
         /*
         * The whole point of this is not running out of memory while reading the file.
@@ -198,6 +230,14 @@ public class Main {
         return occurrences;
     }
 
+    /*
+    * Constructs the transition function for a DFA that is able to search in a text for the
+    * String pattern. This corresponds to the Knuth-Morris-Pratt algorithm.
+    * @param String pattern : The pattern that the corresponding DFA is going to search for in texts.
+    * @returns int [][] : The representation of the transition function of the DFA. Here rows correspond
+    * to what the DFA is currently seeing in the text, while the columns represent a character in the pattern.
+    * So column j corresponds to the jth character in the pattern.
+    * */
     public static int[][] getTransitionFunction(String pattern){
         int patternLength = pattern.length();
         int alphabetSize = sigma.length();
