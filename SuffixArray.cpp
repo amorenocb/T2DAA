@@ -311,6 +311,7 @@ void fulltest(){
 
 	FORs(i, 7, 1){
 		text = parse(to_string(i+15)+".txt");
+		cout << "Testing file " << to_string(i+15)+".txt" << "\n";
 		begin = clock();
 		vector<int> SA = build(text);
 		end = clock();
