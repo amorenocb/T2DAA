@@ -1,5 +1,3 @@
-package dcc.daa;
-
 import java.util.Random;
 
 public class Utilities {
